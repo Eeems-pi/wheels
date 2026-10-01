@@ -546,12 +546,13 @@ jobs:
   mirror:
     name: Deploy
     environment: wheels.eeems.codes
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs:
       - arm-3_11-up
       - bcrypt
       - cffi
       - cryptography
+      - fuse-python
       - indexed-gzip
       # - nuitka
       - numpy
