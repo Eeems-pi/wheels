@@ -559,7 +559,7 @@ jobs:
       - protobuf
       - standard
       - wxpython
-    if: ${{ always() }}
+    if: ${{ always() && github.repository_owner == 'eeems' }}
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v6
