@@ -34,11 +34,11 @@ runs:
   steps:
     - uses: actions/setup-python@v6
       with:
-        python-version: "3.12"
+        python-version: "3.11"
     - name: Create directories
       shell: bash
       run: |
-        python -u "${{ github.action_path }}/create_dirs.py" \
+        python -u "${{ github.action_path }}"create_dirs.py \
           "${{ inputs.input_dir }}" \
           "${{ inputs.output_dir }}"
     - name: Sync with server
