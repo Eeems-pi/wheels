@@ -92,6 +92,11 @@ jobs:
           path: dist
           if-no-files-found: ignore
 
+  python_3_12_up: &python_3_12_up
+    - "3.14"
+    - "3.13"
+    - "3.12"
+
   cffi:
     name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
     runs-on: ubuntu-latest
@@ -299,10 +304,7 @@ jobs:
       matrix:
         package:
           - numpy
-        python:
-          - "3.14"
-          - "3.13"
-          - "3.12"
+        python: *python_3_12_up
         build_on:
           - debian-armv7l
     steps:
@@ -559,7 +561,7 @@ jobs:
       - protobuf
       - standard
       - wxpython
-    if: ${{ always() && github.repository_owner == 'eeems' && github.event_name != 'pull_request' }}
+    if: ${{ always() && github.repository_owner == 'eeems' }}
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v6
