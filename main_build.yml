@@ -1,0 +1,573 @@
+name: Build Wheels
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+permissions: read-all
+jobs:
+  standard:
+    name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - crcmod
+          - zstandard
+          - pynacl
+        python: &python_3_10_up
+          - "3.14"
+          - "3.13"
+          - "3.12"
+          - "3.11"
+          - "3.10"
+        build_on:
+          - manylinux-armv7l-glibc
+          - manylinux-armv7l-musl
+          - manylinux-aarch64-glibc
+          - manylinux-aarch64-musl
+          - manylinux-x86_64-glibc
+          - manylinux-x86_64-musl
+          - manylinux-s390x-glibc
+          - manylinux-ppc64le-glibc
+          - manylinux-ppc64le-musl
+          - manylinux-riscv64-glibc
+          - manylinux-riscv64-musl
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  protobuf:
+    name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - protobuf
+        python: &python_3_11_up
+          - "3.14"
+          - "3.13"
+          - "3.12"
+          - "3.11"
+        build_on:
+          - manylinux-armv7l-glibc
+          - manylinux-armv7l-musl
+          - manylinux-aarch64-glibc
+          - manylinux-aarch64-musl
+          - manylinux-x86_64-glibc
+          - manylinux-x86_64-musl
+          - manylinux-s390x-glibc
+          - manylinux-ppc64le-glibc
+          - manylinux-ppc64le-musl
+          - manylinux-riscv64-glibc
+          - manylinux-riscv64-musl
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  cffi:
+    name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - cffi
+        python: *python_3_10_up
+        build_on:
+          - manylinux-armv7l-musl
+          - manylinux-s390x-glibc
+          - manylinux-ppc64le-glibc
+          - manylinux-ppc64le-musl
+          - manylinux-riscv64-glibc
+          - manylinux-riscv64-musl
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  # nuitka:
+  #   name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       package:
+  #         - nuitka
+  #       python: &python_3_10_up
+  #         - "3.14"
+  #         - "3.13"
+  #         - "3.12"
+  #         - "3.11"
+  #         - "3.10"
+  #       build_on:
+  #         - manylinux-armv7l-musl
+  #         - manylinux-aarch64-glibc
+  #         - manylinux-aarch64-musl
+  #         - manylinux-x86_64-glibc
+  #         - manylinux-x86_64-musl
+  #         - manylinux-s390x-glibc
+  #         - manylinux-ppc64le-glibc
+  #         - manylinux-ppc64le-musl
+  #         - manylinux-riscv64-glibc
+  #         - manylinux-riscv64-musl
+  #   steps:
+  #     - name: Checkout the Git repository
+  #       uses: actions/checkout@v6
+  #     - name: Build ${{ matrix.package }}
+  #       uses: ./
+  #       with:
+  #         name: ${{ matrix.package }}
+  #         build_on: ${{ matrix.build_on }}
+  #         python_version: ${{ matrix.python }}
+  #     - uses: actions/upload-artifact@v6
+  #       with:
+  #         name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+  #         path: dist
+  #         if-no-files-found: ignore
+
+  indexed-gzip:
+    name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - indexed-gzip
+        python: *python_3_10_up
+        build_on:
+          - manylinux-armv7l-glibc
+          - manylinux-armv7l-musl
+          - manylinux-aarch64-glibc
+          - manylinux-aarch64-musl
+          - manylinux-x86_64-glibc
+          - manylinux-x86_64-musl
+          - manylinux-s390x-glibc
+          - manylinux-ppc64le-glibc
+          - manylinux-ppc64le-musl
+          - manylinux-riscv64-glibc
+          - manylinux-riscv64-musl
+          - python-armv7l-glibc
+          - python-armv7l-musl
+          - python-aarch64-glibc
+          - python-aarch64-musl
+          - python-x86_64-glibc
+          - python-x86_64-musl
+          - python-s390x-glibc
+          - python-ppc64le-glibc
+          - python-ppc64le-musl
+          - python-riscv64-glibc
+          - python-riscv64-musl
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+          setup: |
+            if command -v apk >/dev/null;then
+              apk add --no-cache \
+                gcc \
+                musl-dev \
+                zlib-dev
+            fi
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  arm-3_11-up:
+    name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - evdev
+        python: *python_3_11_up
+        build_on:
+          - debian-armv7l
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  pillow:
+    name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - pillow
+        python:
+          - "3.11"
+        build_on:
+          - debian-armv7l
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+          setup: |
+            SUDO=''
+            if [ "$EUID" -ne 0 ]; then
+              SUDO=sudo
+            fi
+            export DEBIAN_FRONTEND="noninteractive"
+            $SUDO apt-get -y update
+            $SUDO apt-get install -y \
+              libtiff5-dev \
+              libjpeg62-turbo-dev \
+              libopenjp2-7-dev \
+              zlib1g-dev \
+              libfreetype6-dev \
+              liblcms2-dev \
+              libwebp-dev \
+              tcl8.6-dev \
+              tk8.6-dev \
+              python3-tk \
+              libharfbuzz-dev \
+              libfribidi-dev \
+              libxcb1-dev
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  numpy:
+    name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - numpy
+        python: *python_3_11_up
+        build_on:
+          - debian-armv7l
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+          setup: |
+            SUDO=''
+            if [ "$EUID" -ne 0 ]; then
+              SUDO=sudo
+            fi
+            export DEBIAN_FRONTEND="noninteractive"
+            $SUDO apt-get -y update
+            $SUDO apt-get install -y \
+              gcc \
+              g++ \
+              gfortran \
+              libopenblas-dev \
+              liblapack-dev \
+              pkg-config \
+              python3-pip \
+              python3-dev \
+              cmake
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  fuse-python:
+    name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - fuse-python
+        python:
+          - "3.14"
+          - "3.13"
+        build_on:
+          - ubuntu-amd64
+          - debian-armv7l
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+          setup: |
+            SUDO=''
+            if [ "$EUID" -ne 0 ]; then
+              SUDO=sudo
+            fi
+            export DEBIAN_FRONTEND="noninteractive"
+            $SUDO apt-get -y update
+            $SUDO apt-get install -y \
+              libfuse-dev
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  wxpython:
+    name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - wxpython
+        python: *python_3_11_up
+        build_on:
+          - ubuntu-amd64
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+          setup: |
+            SUDO=''
+            if [ "$EUID" -ne 0 ]; then
+              SUDO=sudo
+            fi
+            export DEBIAN_FRONTEND="noninteractive"
+            $SUDO apt-get -y update
+            $SUDO apt-get install -y \
+              dpkg-dev \
+              build-essential \
+              python3-dev \
+              freeglut3-dev \
+              libgl1-mesa-dev \
+              libglu1-mesa-dev \
+              libgstreamer-plugins-base1.0-dev \
+              libgtk-3-dev \
+              libjpeg-dev \
+              libnotify-dev \
+              libpng-dev \
+              libsdl2-dev \
+              libsm-dev \
+              libtiff-dev \
+              libwebkit2gtk-4.1-dev \
+              libxtst-dev \
+              libunwind-dev
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  bcrypt:
+    name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - bcrypt
+        python: *python_3_10_up
+        build_on:
+          - manylinux-armv7l-glibc
+          - manylinux-armv7l-musl
+          - manylinux-s390x-glibc
+          - manylinux-riscv64-glibc
+          - manylinux-riscv64-musl
+          - manylinux-ppc64le-glibc
+          - manylinux-ppc64le-musl
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+          setup: |
+            if [[ "${{ matrix.build_on }}" == "manylinux-armv7l-glibc" ]];then
+              curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+              source "$HOME"/.cargo/env
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev
+            elif command -v apt-get >/dev/null; then
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                rustc \
+                cargo \
+                libssl-dev
+            elif command -v apk >/dev/null;then
+              apk add --no-cache \
+                gcc \
+                musl-dev \
+                python3-dev \
+                libffi-dev \
+                openssl-dev \
+                cargo \
+                pkgconfig
+            elif command -v dnf >/dev/null;then
+              dnf install -y \
+                rustc \
+                cargo \
+                openssl-devel
+            fi
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  cryptography:
+    name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - cryptography
+        python: *python_3_10_up
+        build_on:
+          - manylinux-armv7l-glibc
+          - manylinux-armv7l-musl
+          - manylinux-s390x-glibc
+          - manylinux-riscv64-glibc
+          - manylinux-riscv64-musl
+          - python-s390x-glibc
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+          setup: |
+            if [[ "${{ matrix.build_on }}" == "manylinux-armv7l-glibc" ]];then
+              curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+              source "$HOME"/.cargo/env
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev
+            elif command -v apt-get >/dev/null; then
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                rustc \
+                cargo \
+                libssl-dev
+            elif command -v apk >/dev/null;then
+              apk add --no-cache \
+                gcc \
+                musl-dev \
+                python3-dev \
+                libffi-dev \
+                openssl-dev \
+                cargo \
+                pkgconfig
+            elif command -v dnf >/dev/null;then
+              dnf install -y \
+                rustc \
+                cargo \
+                openssl-devel
+            fi
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  mirror:
+    name: Deploy
+    environment: wheels.eeems.codes
+    runs-on: ubuntu-latest
+    needs:
+      - arm-3_11-up
+      - bcrypt
+      - cffi
+      - cryptography
+      - indexed-gzip
+      # - nuitka
+      - numpy
+      - pillow
+      - protobuf
+      - standard
+      - wxpython
+    if: ${{ always() }}
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
+        with:
+          path: ./dist
+      - name: Mirror wheels
+        uses: ./mirror/
+        with:
+          ssh_host: ${{ vars.SSH_SERVER }}
+          ssh_key: ${{secrets.SSH_KEY}}
+          ssh_dir: ${{ vars.SSH_PATH }}
+          ssh_user: ${{ vars.SSH_USER }}
+          ssh_args: ${{ vars.SSH_ARGS }}
