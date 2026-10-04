@@ -163,8 +163,3 @@ src/
 metadata/
 .pi/
 
-# Agent scratch artifacts
-*.tgz
-.agentty/
-main_*.yml
-main_*.yaml
