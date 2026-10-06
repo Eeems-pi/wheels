@@ -322,9 +322,17 @@ jobs:
             export DEBIAN_FRONTEND="noninteractive"
             $SUDO apt-get -y update
             $SUDO apt-get install -y \
-              gcc \
-              g++ \
-              gfortran \
+              debian-archive-keyring
+            echo "deb http://deb.debian.org/debian bullseye-backports main" | $SUDO tee /etc/apt/sources.list.d/bullseye-backports.list
+            $SUDO apt-get -y update
+            $SUDO apt-get install -y -t bullseye-backports \
+              gcc-11 \
+              g++-11 \
+              gfortran-11
+            export CC=gcc-11
+            export CXX=g++-11
+            export FC=gfortran-11
+            $SUDO apt-get install -y \
               libopenblas-dev \
               liblapack-dev \
               pkg-config \
