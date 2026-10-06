@@ -64,6 +64,11 @@ def main():
             image = f"eeems/nuitka-arm-builder:bullseye-{args.python}"
             platform = "linux/arm/v7"
             script.append(". /opt/lib/nuitka/bin/activate")
+            script.extend([
+                "export DEBIAN_FRONTEND=noninteractive",
+                "apt-get update",
+                "apt-get install -y libatlas-base-dev liblapack-dev libgfortran-dev",
+            ])
 
         case "python":
             parts = args.build_on.split("-", 2)
