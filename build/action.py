@@ -57,14 +57,6 @@ def main():
         case "":
             pass
 
-        case "debian":
-            if args.build_on.split("-", 1)[1] != "armv7l":
-                raise NotImplementedError(args.build_on)
-
-            image = f"eeems/nuitka-arm-builder:bullseye-{args.python}"
-            platform = "linux/arm/v7"
-            script.append(". /opt/lib/nuitka/bin/activate")
-
         case "python":
             parts = args.build_on.split("-", 2)
             if len(parts) < 3:
