@@ -54,7 +54,7 @@ def main():
             if args.build_on.split("-", 1)[1] != "amd64":
                 raise NotImplementedError(args.build_on)
 
-        case "":
+        case "" :
             pass
 
         case "python":
@@ -62,66 +62,134 @@ def main():
             if len(parts) < 3:
                 raise NotImplementedError(args.build_on)
 
-            arch, libc = parts[1:]
-            match arch:
-                case "armv7l":
-                    platform = "linux/arm/v7"
+                arch, libc = parts[1:]
+                match arch:
+                    case "armv7l":
+                        platform = "linux/arm/v7"
 
-                case _:
-                    platform = f"linux/{arch}"
+                    case _:
+                        platform = f"linux/{arch}"
 
-            match libc:
-                case "glibc":
-                    image = f"python:{args.python}"
+                match libc:
+                    case "glibc":
+                        image = f"python:{args.python}"
 
-                case "musl":
-                    image = f"python:{args.python}-alpine"
-                    script.append("apk add --no-cache bash")
+                    case "musl":
+                        image = f"python:{args.python}-alpine"
+                        script.append("apk add --no-cache bash")
 
-                case _:
+                    case _:
+                        raise NotImplementedError(args.build_on)
+
+            case "manylinux":
+                parts = args.build_on.split("-", 2)
+                if len(parts) < 3:
                     raise NotImplementedError(args.build_on)
 
-        case "manylinux":
-            parts = args.build_on.split("-", 2)
-            if len(parts) < 3:
+                arch, libc = parts[1:]
+                if libc == "musl":
+                    image = f"musllinux_1_2_{arch}"
+
+                elif arch == "armv7l":
+                    image = f"manylinux_2_35_{arch}"
+
+                elif arch == "riscv64":
+                    image = f"manylinux_2_39_{arch}"
+
+                else:
+                    image = f"manylinux_2_34_{arch}"
+
+                manylinux = image
+                image = f"quay.io/pypa/{image}:latest"
+
+                chronic(
+                    "docker",
+                    "run",
+                    "--privileged",
+                    "--rm",
+                    "tonistiigi/binfmt",
+                    "--install",
+                    "all",
+                )
+                python = args.python.replace(".", "")
+                python_interpreter = f"cp{python}-cp{python}"
+                script.extend(
+                    [
+                        f'manylinux-interpreters ensure "{python_interpreter}"',
+                        f'PATH="/opt/python/{python_interpreter}/bin:$PATH"',
+                    ]
+                )
+
+            case _:
                 raise NotImplementedError(args.build_on)
+        assert isinstance(args.name, str)  # pyright: ignore[reportAny]
+        assert isinstance(args.workspace, str)  # pyright: ignore[reportAny]
+        assert isinstance(args.force, bool)  # pyright: ignore[reportAny]
+        if image is None:
+            if [sys.version_info.major, sys.version_info.minor] != [
+                int(x) for x in args.python.split(".")
+            ]:
+                raise NotImplementedError(f"Not running {args.python}")
 
-            arch, libc = parts[1:]
-            if libc == "musl":
-                image = f"musllinux_1_2_{arch}"
+            venv = os.path.join(args.workspace, ".wheel-venv")
+            chronic(sys.executable, "-m", "venv", venv)
+            venv_python = os.path.join(venv, "bin", "python")
+            chronic(venv_python, "-m", "ensurepip")
+            chronic(venv_python, "-m", "pip", "install", "--upgrade", "pip")
+            env = os.environ.copy()
+            if args.force:
+                env["FORCE"] = "1"
 
-            elif arch == "armv7l":
-                image = f"manylinux_2_35_{arch}"
+            env["PYTHONUNBUFFERED"] = "1"
+            _ = subprocess.run(
+                [
+                    venv_python,
+                    "-u",
+                    os.path.join(os.path.dirname(__file__), "build.py")
+                    ,args.name, args.workspace,
+                ],
+                env=env,
+                check=True,
+            )
+            return
 
-            elif arch == "riscv64":
-                image = f"manylinux_2_39_{arch}"
-
-            else:
-                image = f"manylinux_2_34_{arch}"
-
-            manylinux = image
-            image = f"quay.io/pypa/{image}:latest"
-
-            chronic(
+        _ = subprocess.run(
+            [
                 "docker",
                 "run",
-                "--privileged",
                 "--rm",
-                "tonistiigi/binfmt",
-                "--install",
-                "all",
-            )
-            python = args.python.replace(".", "")
-            python_interpreter = f"cp{python}-cp{python}"
-            script.extend(
-                [
-                    f'manylinux-interpreters ensure "{python_interpreter}"',
-                    f'PATH="/opt/python/{python_interpreter}/bin:$PATH"',
-                ]
-            )
-
-        case _:
-            raise NotImplementedError(args.build_on)
+                *([] if platform is None else [f"--platform={platform}"]),
+                f"--volume={args.workspace}:/workspace",
+                f"--volume={os.path.dirname(__file__)}:/action",
+                f"--env=RUNNER_DEBUG={os.environ.get('RUNNER_DEBUG', '')}",
+                f"--env=UNIVERSAL={os.environ.get('UNIVERSAL', '')}",
+                f"--env=CONFIG_SETTINGS={os.environ.get('CONFIG_SETTINGS', '')}",
+                f"--env=SETUP={os.environ.get('SETUP', '')}",
+                f"--env=MANYLINUX={manylinux}",
+                *(["--env=FORCE=1"] if args.force else []),
+                "--env=PYTHONUNBUFFERED=1",
+                image,
+                "sh",
+                "-ec",
+                "\n".join(
+                    [
+                        "cat > ~/.pypirc << EOF",
+                        "[distutils]\n",
+                        "index-servers =\n",
+                        "    pypi\n",
+                        "    eeems\n",
+                        "[pypi]\n",
+                        "[eeems]\n",
+                        "repository = https://wheels.eeems.codes/\n",
+                        "EOF",
+                        "cd /tmp",
+                        *script,
+                        f'python -u /action/build.py "{args.name}" /workspace',
+                    ]
+                ),
+            ],
+            check=True,
+        )
 
     assert isinstance(args.name, str)  # pyright: ignore[reportAny]
     assert isinstance(args.workspace, str)  # pyright: ignore[reportAny]
@@ -192,7 +260,6 @@ def main():
         ],
         check=True,
     )
-
 
 if __name__ == "__main__":
     main()
