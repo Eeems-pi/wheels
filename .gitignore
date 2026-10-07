@@ -162,8 +162,4 @@ src/
 *.whl
 metadata/
 .pi/
-*.tgz
-.agentty/
-*.draft.yml
-*.draft.yaml
 
