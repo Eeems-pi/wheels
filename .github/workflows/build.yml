@@ -304,7 +304,7 @@ jobs:
           - "3.13"
           - "3.12"
         build_on:
-          - manylinux-armv7l-glibc
+          - debian-armv7l
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v6
@@ -314,6 +314,11 @@ jobs:
           name: ${{ matrix.package }}
           build_on: ${{ matrix.build_on }}
           python_version: ${{ matrix.python }}
+          setup: |
+            echo "deb http://deb.debian.org/debian bullseye-backports main" | sudo tee /etc/apt/sources.list.d/backports.list
+            sudo apt-get update
+            sudo apt-get install -y -t bullseye-backports gcc-11 g++-11 gfortran-11
+            export CC=gcc-11 CXX=g++-11 FC=gfortran-11
       - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
