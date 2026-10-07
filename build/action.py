@@ -49,68 +49,29 @@ def main():
     assert isinstance(args.build_on, str)  # pyright: ignore[reportAny]
     assert isinstance(args.python, str)  # pyright: ignore[reportAny]
     system = args.build_on.split("-", 1)[0]
-    match system:
-        case "ubuntu":
-            if args.build_on.split("-", 1)[1] != "amd64":
-                raise NotImplementedError(args.build_on)
+match system:
+    case "ubuntu":
+        if args.build_on.split("-", 1)[1] != "amd64":
+            raise NotImplementedError(args.build_on)
+    case "debian":
+        parts = args.build_on.split("-", 2)
+        if len(parts) < 3:
+            raise NotImplementedError(args.build_on)
+        arch, libc = parts[1:]
+        match arch:
+            case "armv7l":
+                platform = "linux/arm/v7"
 
-        case "" :
-            pass
+            case _:
+                platform = f"linux/{arch}"
 
-        case "python":
-            parts = args.build_on.split("-", 2)
-            if len(parts) < 3:
-                raise NotImplementedError(args.build_on)
+        match libc:
+            case "glibc":
+                image = f"python:{args.python}"
 
-                arch, libc = parts[1:]
-                match arch:
-                    case "armv7l":
-                        platform = "linux/arm/v7"
-
-                    case _:
-                        platform = f"linux/{arch}"
-
-                match libc:
-                    case "glibc":
-                        image = f"python:{args.python}"
-
-                    case "musl":
-                        image = f"python:{args.python}-alpine"
-                        script.append("apk add --no-cache bash")
-
-                    case _:
-                        raise NotImplementedError(args.build_on)
-
-            case "manylinux":
-                parts = args.build_on.split("-", 2)
-                if len(parts) < 3:
-                    raise NotImplementedError(args.build_on)
-
-                arch, libc = parts[1:]
-                if libc == "musl":
-                    image = f"musllinux_1_2_{arch}"
-
-                elif arch == "armv7l":
-                    image = f"manylinux_2_35_{arch}"
-
-                elif arch == "riscv64":
-                    image = f"manylinux_2_39_{arch}"
-
-                else:
-                    image = f"manylinux_2_34_{arch}"
-
-                manylinux = image
-                image = f"quay.io/pypa/{image}:latest"
-
-                chronic(
-                    "docker",
-                    "run",
-                    "--privileged",
-                    "--rm",
-                    "tonistiigi/binfmt",
-                    "--install",
-                    "all",
-                )
+            case "musl":
+                image = f"python:{args.python}-alpine"
+                script.append("apk add --no-cache bash")
                 python = args.python.replace(".", "")
                 python_interpreter = f"cp{python}-cp{python}"
                 script.extend(
@@ -122,6 +83,7 @@ def main():
 
             case _:
                 raise NotImplementedError(args.build_on)
+
         assert isinstance(args.name, str)  # pyright: ignore[reportAny]
         assert isinstance(args.workspace, str)  # pyright: ignore[reportAny]
         assert isinstance(args.force, bool)  # pyright: ignore[reportAny]
@@ -145,8 +107,8 @@ def main():
                 [
                     venv_python,
                     "-u",
-                    os.path.join(os.path.dirname(__file__), "build.py")
-                    ,args.name, args.workspace,
+                    os.path.join(os.path.dirname(__file__), "build.py"),
+                    args.name, args.workspace,
                 ],
                 env=env,
                 check=True,
@@ -178,13 +140,11 @@ def main():
                         "index-servers =\n",
                         "    pypi\n",
                         "    eeems\n",
-                        "[pypi]\n",
-                        "[eeems]\n",
                         "repository = https://wheels.eeems.codes/\n",
                         "EOF",
                         "cd /tmp",
                         *script,
-                        f'python -u /action/build.py "{args.name}" /workspace',
+                        f'python -u /action/build.py \"{args.name}\" /workspace',
                     ]
                 ),
             ],
@@ -215,8 +175,7 @@ def main():
                 venv_python,
                 "-u",
                 os.path.join(os.path.dirname(__file__), "build.py"),
-                args.name,
-                args.workspace,
+                args.name, args.workspace,
             ],
             env=env,
             check=True,
@@ -244,17 +203,15 @@ def main():
             "\n".join(
                 [
                     "cat > ~/.pypirc << EOF",
-                    "[distutils]",
-                    "index-servers =",
-                    "    pypi",
-                    "    eeems",
-                    "[pypi]",
-                    "[eeems]",
-                    "repository = https://wheels.eeems.codes/",
+                    "[distutils]\n",
+                    "index-servers =\n",
+                    "    pypi\n",
+                    "    eeems\n",
+                    "repository = https://wheels.eeems.codes/\n",
                     "EOF",
                     "cd /tmp",
                     *script,
-                    f'python -u /action/build.py "{args.name}" /workspace',
+                    f'python -u /action/build.py \"{args.name}\" /workspace',
                 ]
             ),
         ],
