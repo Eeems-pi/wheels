@@ -67,9 +67,7 @@ def main():
             if args.build_on == "debian-armv7l":
                 # Fix gcc compiler for numpy on Debian ARMv7L
                 # Ensure gcc-11 and g++ are installed for numpy build
-                script += "\n" + "            sudo apt-get install -y gcc-11 g++-11"
-                script += "\n" + "            export PATH=/opt/lib/nuitka/bin:$PATH"
-                script += "\n" + "            pip install -q --no-build-isolation ==numpy"
+                script.append("sudo apt-get install -y gcc-11 g++-11")
 
         case "python":
             parts = args.build_on.split("-", 2)

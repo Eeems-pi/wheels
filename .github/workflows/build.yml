@@ -315,7 +315,13 @@ jobs:
           build_on: ${{ matrix.build_on }}
           python_version: ${{ matrix.python }}
           setup: |
-            sudo apt-get install -y -t \
+            SUDO=''
+            if [ "$EUID" -ne 0 ]; then
+              SUDO=sudo
+            fi
+            export DEBIAN_FRONTEND="noninteractive"
+            $SUDO apt-get -y update
+            $SUDO apt-get install -y -t \
               bullseye-backports \
               gcc-11 \
               g++-11 \
