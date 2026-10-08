@@ -53,10 +53,13 @@ inputs:
   config_settings:
     description: Extra configuration options to pass to the backend
     required: false
-    default: ""
+    default: "null"
 runs:
-  using: "composite"
+  using: composite
   steps:
+    - name: Set up QEMU
+      if: inputs.build_on != 'ubuntu-amd64'
+      uses: docker/setup-qemu-action@v4
     - uses: actions/setup-python@v6
       with:
         python-version: ${{ inputs.build_on == 'ubuntu-amd64' && inputs.python_version || '3.11' }}
