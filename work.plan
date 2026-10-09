@@ -1,0 +1,49 @@
+# Plan for Eeems/wheels#13: Clean up debian-armv7l special case in build/action.py
+
+**Problem Summary**
+
+Pull request `Eeems/wheels#13` targets the removal of debian-armv7l special case handling from `build/action.py` CI action. The current commit `37a8b1bc` has already executed this change, replacing the `if args.build_on == "debian-armv7l"` guard with a `:` syntax. The worker must now verify that the special case is fully removed and confirm that CI actions remain functional.
+
+**Approach**
+
+The plan will:
+1. Verify the removal using the git diff
+2. Check that no remaining armv7l references exist in action files
+3. Confirm the CI workflow remains stable after changes
+
+**Steps**
+
+1. **Verify git diff and file state**  
+   - Read the actual diff from commit `37a8b1bc` for `build/action.py`
+   - Confirm `if args.build_on == "debian-armv7l"` was replaced by `:` at line 60
+   - Validate the special case removal is complete.
+
+2. **Verify remaining armv7l references**  
+   - Scan `build/action.py` for any remaining `armv7l` patterns using grep  
+   - Verify no `elif` or `if` blocks targeting armv7l remain
+   - Optionally check `build.yml` for similar patterns.
+
+3. **CI verification**  
+   - Run compilation test to confirm action files still parse correctly
+   - Optionally run CI pipeline to ensure stability.
+
+4. **Update state documentation**  
+   - Write the final plan status to `work.plan`
+   - Confirm the untracked file is simply `work.plan`, not a new file.
+
+**Testing**
+
+- Compile check to validate action file changes
+- Search for remaining `armv7l` references
+- CI action verification (run if available)
+
+**Risks/Unknowns**
+
+- Potential for armv7l code to return in unrelated files
+- If any CI changes are required beyond this step, they are not yet known and should be addressed by the worker.
+
+**Assumptions**
+
+- The removed guard at line 60 is the only armv7l-specific code
+- Any remaining armv7l references are within scope of current verification
+- CI actions remain functional after this single removal
