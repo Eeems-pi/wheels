@@ -64,7 +64,7 @@ def main():
             image = f"eeems/nuitka-arm-builder:bullseye-{args.python}"
             platform = "linux/arm/v7"
 
-            if args.build_on == "debian-armv7l":
+:
 
         case "python":
             parts = args.build_on.split("-", 2)
