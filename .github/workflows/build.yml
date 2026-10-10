@@ -237,6 +237,18 @@ jobs:
           name: ${{ matrix.package }}
           build_on: ${{ matrix.build_on }}
           python_version: ${{ matrix.python }}
+          setup: |
+            SUDO=''
+            if [ "$EUID" -ne 0 ]; then
+              SUDO=sudo
+            fi
+            export DEBIAN_FRONTEND="noninteractive"
+            $SUDO apt-get -y update
+            $SUDO apt-get install -y \
+              gcc \
+              python3-dev \
+              pkg-config \
+              linux-libc-dev
       - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
@@ -251,8 +263,7 @@ jobs:
       matrix:
         package:
           - pillow
-        python:
-          - "3.11"
+        python: *python_3_11_up
         build_on:
           - debian-armv7l
     steps:
@@ -331,7 +342,9 @@ jobs:
               pkg-config \
               python3-pip \
               python3-dev \
-              cmake
+              cmake \
+              ninja-build
+            $SUDO pip3 install --upgrade meson-python meson ninja
       - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
