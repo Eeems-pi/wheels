@@ -225,8 +225,12 @@ jobs:
       matrix:
         package:
           - evdev
-        python: *python_3_11_up
-        build_on:
+        python:
+          - "3.14"
+          - "3.13"
+          - "3.12"
+          - "3.11"
+      build_on:
           - debian-armv7l
     steps:
       - name: Checkout the Git repository
@@ -263,7 +267,11 @@ jobs:
       matrix:
         package:
           - pillow
-        python: *python_3_11_up
+        python:
+          - "3.14"
+          - "3.13"
+          - "3.12"
+          - "3.11"
         build_on:
           - debian-armv7l
     steps:
