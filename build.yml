@@ -29,6 +29,9 @@ clean:
 
 sources:
   apt-get update --allow-unencrypted
+  debian: https://archive.debian.org/debian/pool/main/
+  non-free: https://archive.debian.org/debian/pool/main/
+
 
 
 sources:
