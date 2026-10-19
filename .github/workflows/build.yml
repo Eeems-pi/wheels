@@ -21,6 +21,7 @@ jobs:
         package:
           - protobuf
           - cffi
+          - numpy
         python: &python_3_12_up
           - "3.14"
           - "3.13"
@@ -30,15 +31,6 @@ jobs:
         build_on:
           - manylinux-armv7l-glibc
           - manylinux-armv7l-musl
-          - manylinux-aarch64-glibc
-          - manylinux-aarch64-musl
-          - manylinux-x86_64-glibc
-          - manylinux-x86_64-musl
-          - manylinux-s390x-glibc
-          - manylinux-ppc64le-glibc
-          - manylinux-ppc64le-musl
-          - manylinux-riscv64-glibc
-          - manylinux-riscv64-musl
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v6
