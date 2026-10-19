@@ -123,48 +123,37 @@ jobs:
           path: dist
           if-no-files-found: ignore
 
-  # nuitka:
+  # numpy:
   #   name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
   #   runs-on: ubuntu-latest
   #   strategy:
   #     fail-fast: false
   #     matrix:
   #       package:
-  #         - nuitka
-  #       python: &python_3_10_up
+  #         - numpy
+  #       python: &python_3_12_up
   #         - "3.14"
   #         - "3.13"
   #         - "3.12"
   #         - "3.11"
   #         - "3.10"
   #       build_on:
-  #         - manylinux-armv7l-musl
-  #         - manylinux-aarch64-glibc
-  #         - manylinux-aarch64-musl
-  #         - manylinux-x86_64-glibc
-  #         - manylinux-x86_64-musl
-  #         - manylinux-s390x-glibc
-  #         - manylinux-ppc64le-glibc
-  #         - manylinux-ppc64le-musl
-  #         - manylinux-riscv64-glibc
-  #         - manylinux-riscv64-musl
+  #         - manylinux-armv7l-glibc
   #   steps:
   #     - name: Checkout the Git repository
   #       uses: actions/checkout@v6
-  #     - name: Build ${{ matrix.package }}
-  #       uses: ./
-  #       with:
-  #         name: ${{ matrix.package }}
-  #         build_on: ${{ matrix.build_on }}
-  #         python_version: ${{ matrix.python }}
   #     - uses: actions/upload-artifact@v6
   #       with:
   #         name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
   #         path: dist
   #         if-no-files-found: ignore
-
-  indexed-gzip:
-    name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+  #   uses: actions/curl@v3
+  #   with:
+  #     with:
+  #       with:
+  #         name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
+  #         path: dist
+  #         if-no-files-found: ignore
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -320,7 +309,6 @@ jobs:
               SUDO=sudo
             fi
             export DEBIAN_FRONTEND="noninteractive"
-            # Debian 11 is archived: deb.debian.org 404s on the pool files.
             printf '%s\n' \
               'deb http://archive.debian.org/debian bullseye main' \
               'deb http://archive.debian.org/debian-security bullseye-security main' \
@@ -337,6 +325,12 @@ jobs:
               python3-pip \
               python3-dev \
               cmake
+            if [[ "${{ matrix.build_on }}}" == *"manylinux-armv7l-glibc" ]] || true; then
+              $SUDO sh -c 'curl --proto \'"'"'"'\'=https'"'"'"' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y'
+              $SUDO source "$HOME"/.cargo/env
+              $SUDO apt-get update
+              $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev
+            fi
       - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
