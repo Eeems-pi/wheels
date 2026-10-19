@@ -10,16 +10,15 @@ on:
 permissions: read-all
 jobs:
   standard:
+  # numpy:
     name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         package:
-          - crcmod
-          - zstandard
-          - pynacl
-        python: &python_3_10_up
+          - numpy
+        python: &python_3_12_up
           - "3.14"
           - "3.13"
           - "3.12"
@@ -295,6 +294,60 @@ jobs:
         build_on:
           - debian-armv7l
     steps:
+
+      name: Install setup tools for numpy
+        uses: ./build/
+        with:
+          name: numpy
+          build_on: ${{ matrix.build_on }
+          python_version: ${{ matrix.python }}
+          setup: |
+            SUDO='
+            if [ "$EUID" -ne 0 ]; then
+              SUDO=sudo
+            fi
+            export DEBIAN_FRONTEND="noninteractive"
+            $SUDO apt-get -y update
+            $SUDO apt-get install -y 
+              gcc 
+              g++ 
+              gfortran 
+              libopenblas-dev 
+              liblapack-dev 
+              pkg-config 
+              python3-pip 
+              python3-dev 
+              cmake
+            if [[ "${{ matrix.build_on }}" == "manylinux-armv7l-glibc" ]]; then
+              $SUDO sh -c 'curl --proto \'\'\'''\''=https\'\'\'\''\' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y'
+              $SUDO source \"$HOME\\".cargo/env'
+              $SUDO apt-get update
+              $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev
+            fi
+          setup: |
+            SUDO='
+            if [ "$EUID" -ne 0 ]; then
+              SUDO=sudo
+            fi
+            export DEBIAN_FRONTEND="noninteractive"
+            $SUDO apt-get -y update
+            $SUDO apt-get install -y 
+              gcc 
+              g++ 
+              gfortran 
+              libopenblas-dev 
+              liblapack-dev 
+              pkg-config 
+              python3-pip 
+              python3-dev 
+              cmake
+            if [[ "${{ matrix.build_on }}" == "manylinux-armv7l-glibc" ]]; then
+              $SUDO sh -c 'curl --proto \'\'\'''\''=https\'\'\'\''\' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y'
+              $SUDO source \"$HOME\\".cargo/env'
+              $SUDO apt-get update
+              $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev
+            fi
+
       - name: Checkout the Git repository
         uses: actions/checkout@v6
       - name: Build ${{ matrix.package }}
@@ -308,13 +361,6 @@ jobs:
             if [ "$EUID" -ne 0 ]; then
               SUDO=sudo
             fi
-            export DEBIAN_FRONTEND="noninteractive"
-            printf '%s\n' \
-              'deb http://archive.debian.org/debian bullseye main' \
-              'deb http://archive.debian.org/debian-security bullseye-security main' \
-              'deb http://archive.debian.org/debian bullseye-updates main' \
-              > /etc/apt/sources.list
-            $SUDO apt-get -y update
             $SUDO apt-get install -y \
               gcc \
               g++ \
@@ -325,8 +371,8 @@ jobs:
               python3-pip \
               python3-dev \
               cmake
-            if [[ "${{ matrix.build_on }}}" == *"manylinux-armv7l-glibc" ]] || true; then
-              $SUDO sh -c 'curl --proto \'"'"'"'\'=https'"'"'"' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y'
+            if [[ "${{ matrix.build_on }}" == "debian-armv7l" ]]; then
+              $SUDO sh -c 'curl --proto \'\'\'"'"'\'"'"'=https\'\'\'"'"'\' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y'
               $SUDO source "$HOME"/.cargo/env
               $SUDO apt-get update
               $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev
@@ -361,7 +407,7 @@ jobs:
           build_on: ${{ matrix.build_on }}
           python_version: ${{ matrix.python }}
           setup: |
-            SUDO=''
+            SUDO='''
             if [ "$EUID" -ne 0 ]; then
               SUDO=sudo
             fi
@@ -369,6 +415,8 @@ jobs:
             $SUDO apt-get -y update
             $SUDO apt-get install -y \
               libfuse-dev
+              libssl-dev
+              python3-dev
       - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.package }}-py${{ matrix.python}}-${{ matrix.build_on }}
@@ -516,26 +564,21 @@ jobs:
               source "$HOME"/.cargo/env
               apt-get update
               DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev
-            elif command -v apt-get >/dev/null; then
-              apt-get update
-              DEBIAN_FRONTEND=noninteractive apt-get install -y \
-                rustc \
-                cargo \
-                libssl-dev
-            elif command -v apk >/dev/null;then
-              apk add --no-cache \
-                gcc \
-                musl-dev \
-                python3-dev \
-                libffi-dev \
-                openssl-dev \
-                cargo \
-                pkgconfig
-            elif command -v dnf >/dev/null;then
-              dnf install -y \
-                rustc \
-                cargo \
-                openssl-devel
+
+              elif command -v apk >/dev/null;then
+            apk add --no-cache
+              gcc
+              musl-dev
+              python3-dev
+              libffi-dev
+              openssl-dev
+              cargo
+              pkgconfig
+              elif command -v dnf >/dev/null;then
+            dnf install -y
+              rustc
+              cargo
+              openssl-devel
             fi
       - uses: actions/upload-artifact@v6
         with:
