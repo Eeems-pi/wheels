@@ -4,12 +4,9 @@ on:
     branches:
       - main
   pull_request:
-    - branches:
-      - main
-    - pull_request:
-      - workflow_dispatch:
-      - schedule:
-          - cron: "0 0 * * *"
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
 permissions: read-all
 jobs:
   standard:
@@ -19,10 +16,10 @@ jobs:
       fail-fast: false
       matrix:
         package:
-          - protobuf
-          - cffi
-          - numpy
-        python: &python_3_12_up
+          - crcmod
+          - zstandard
+          - pynacl
+        python: &python_3_10_up
           - "3.14"
           - "3.13"
           - "3.12"
@@ -31,6 +28,15 @@ jobs:
         build_on:
           - manylinux-armv7l-glibc
           - manylinux-armv7l-musl
+          - manylinux-aarch64-glibc
+          - manylinux-aarch64-musl
+          - manylinux-x86_64-glibc
+          - manylinux-x86_64-musl
+          - manylinux-s390x-glibc
+          - manylinux-ppc64le-glibc
+          - manylinux-ppc64le-musl
+          - manylinux-riscv64-glibc
+          - manylinux-riscv64-musl
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v6
@@ -45,7 +51,7 @@ jobs:
           name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
           path: dist
           if-no-files-found: ignore
-  
+
   protobuf:
     name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
     runs-on: ubuntu-latest
@@ -85,7 +91,7 @@ jobs:
           name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
           path: dist
           if-no-files-found: ignore
-  
+
   cffi:
     name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
     runs-on: ubuntu-latest
@@ -116,3 +122,285 @@ jobs:
           name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
           path: dist
           if-no-files-found: ignore
+
+  indexed-gzip:
+    name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - indexed-gzip
+        python: *python_3_10_up
+        build_on:
+          - manylinux-armv7l-glibc
+          - manylinux-armv7l-musl
+          - manylinux-aarch64-glibc
+          - manylinux-aarch64-musl
+          - manylinux-x86_64-glibc
+          - manylinux-x86_64-musl
+          - manylinux-s390x-glibc
+          - manylinux-ppc64le-glibc
+          - manylinux-ppc64le-musl
+          - manylinux-riscv64-glibc
+          - manylinux-riscv64-musl
+          - python-armv7l-glibc
+          - python-armv7l-musl
+          - python-aarch64-glibc
+          - python-aarch64-musl
+          - python-x86_64-glibc
+          - python-x86_64-musl
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  pillow:
+    name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - pillow
+        python: *python_3_10_up
+        build_on:
+          - manylinux-armv7l-glibc
+          - manylinux-armv7l-musl
+          - manylinux-aarch64-glibc
+          - manylinux-aarch64-musl
+          - manylinux-x86_64-glibc
+          - manylinux-x86_64-musl
+          - manylinux-s390x-glibc
+          - manylinux-ppc64le-glibc
+          - manylinux-ppc64le-musl
+          - manylinux-riscv64-glibc
+          - manylinux-riscv64-musl
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  wxpython:
+    name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - wxpython
+        python: *python_3_10_up
+        build_on:
+          - manylinux-armv7l-glibc
+          - manylinux-armv7l-musl
+          - manylinux-aarch64-glibc
+          - manylinux-aarch64-musl
+          - manylinux-x86_64-glibc
+          - manylinux-x86_64-musl
+          - manylinux-s390x-glibc
+          - manylinux-ppc64le-glibc
+          - manylinux-ppc64le-musl
+          - manylinux-riscv64-glibc
+          - manylinux-riscv64-musl
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  cryptography:
+    name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - cryptography
+        python: *python_3_10_up
+        build_on:
+          - manylinux-armv7l-glibc
+          - manylinux-armv7l-musl
+          - manylinux-aarch64-glibc
+          - manylinux-aarch64-musl
+          - manylinux-x86_64-glibc
+          - manylinux-x86_64-musl
+          - manylinux-s390x-glibc
+          - manylinux-ppc64le-glibc
+          - manylinux-ppc64le-musl
+          - manylinux-riscv64-glibc
+          - manylinux-riscv64-musl
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+          setup: |
+            if [[ "${{ matrix.build_on }}" == "manylinux-armv7l-glibc" ]];then
+              curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+              source "$HOME"/.cargo/env
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y libssl-dev
+            elif command -v apt-get >/dev/null; then
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                rustc \
+                cargo \
+                libssl-dev
+            elif command -v apk >/dev/null;then
+              apk add --no-cache \
+                gcc \
+                musl-dev \
+                python3-dev \
+                libffi-dev \
+                openssl-dev \
+                cargo \
+                pkgconfig
+            elif command -v dnf >/dev/null;then
+              dnf install -y \
+                rustc \
+                cargo \
+                openssl-devel
+            fi
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  bcrypt:
+    name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - bcrypt
+        python: *python_3_10_up
+        build_on:
+          - manylinux-armv7l-glibc
+          - manylinux-armv7l-musl
+          - manylinux-s390x-glibc
+          - manylinux-riscv64-glibc
+          - manylinux-riscv64-musl
+          - python-s390x-glibc
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  numpy:
+    name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - numpy
+        python: &python_3_12_up
+          - "3.14"
+          - "3.13"
+          - "3.12"
+        build_on:
+          - debian-armv7l
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - name: Install system dependencies for numpy
+        if: matrix.build_on == 'debian-armv7l'
+        run: |
+          apt-get update
+          apt-get install -y gcc gfortran libopenblas-dev liblapack-dev pkg-config
+      - name: Install Rust for numpy on armv7l
+        if: matrix.build_on == 'debian-armv7l'
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
+          rustup target add armv7-unknown-linux-gnueabihf
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Build ${{ matrix.package }}
+        uses: ./build/
+        with:
+          name: ${{ matrix.package }}
+          build_on: ${{ matrix.build_on }}
+          python_version: ${{ matrix.python }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
+          path: dist
+          if-no-files-found: ignore
+
+  mirror:
+    name: Deploy
+    environment: wheels.eeems.codes
+    runs-on: ubuntu-latest
+    needs:
+      - standard
+      - protobuf
+      - cffi
+      - indexed-gzip
+      - pillow
+      - wxpython
+      - cryptography
+      - bcrypt
+      - numpy
+    if: always() && github.event_name != 'pull_request'
+    steps:
+      - name: Checkout the Git repository
+        uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
+        with:
+          path: ./dist
+      - name: Mirror wheels
+        uses: ./mirror/
+        with:
+          ssh_host: ${{ vars.SSH_SERVER }}
+          ssh_key: ${{secrets.SSH_KEY}}
+          ssh_dir: ${{ vars.SSH_PATH }}
+          ssh_user: ${{ vars.SSH_USER }}
+          ssh_args: ${{ vars.SSH_ARGS }}
