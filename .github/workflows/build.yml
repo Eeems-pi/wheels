@@ -348,17 +348,6 @@ jobs:
     steps:
       - name: Checkout the Git repository
         uses: actions/checkout@v6
-      - name: Install system dependencies for numpy
-        if: matrix.build_on == 'debian-armv7l'
-        run: |
-          apt-get update
-          apt-get install -y gcc gfortran libopenblas-dev liblapack-dev pkg-config
-      - name: Install Rust for numpy on armv7l
-        if: matrix.build_on == 'debian-armv7l'
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          source $HOME/.cargo/env
-          rustup target add aarch64-unknown-linux-gnueabihf
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -369,6 +358,14 @@ jobs:
           name: ${{ matrix.package }}
           build_on: ${{ matrix.build_on }}
           python_version: ${{ matrix.python }}
+          setup: |
+            apt-get -y update
+            DEBIAN_FRONTEND=noninteractive apt-get install -y \
+              gcc \
+              gfortran \
+              libopenblas-dev \
+              liblapack-dev \
+              pkg-config
       - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.package }}-py${{ matrix.python }}-${{ matrix.build_on }}
